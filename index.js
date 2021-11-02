@@ -1,26 +1,57 @@
 const handleSearch = async (event) => {
-    event.preventDefault();
-  
-    // implemente a consulta a partir daqui
-  
-    //// Exemplo de endpoint: https://api.tvmaze.com/search/shows?q=lost
-  
-    //// Elementos de leiaute importantes:
-  
-    //  #message: use para exibir mensagens aos usuário, por exemplo:
-  
-    const message = document.querySelector('#message');
-    message.innerHTML = 'exercício ainda não resolvido.';
-  
-    //  #shows: conterá os shows, cada um em um <li>, por exemplo:
-    // <li>
-    //   <img class="poster" src="https://static.tvmaze.com/uploads/images/medium_portrait/0/1389.jpg" />
-    //   <span class="show-name">Lost</span>
-    // </li>
-  };
-  
-  document.addEventListener('DOMContentLoaded', () => {
-    document
-      .querySelector('#search-form')
-      .addEventListener('submit', handleSearch);
+  event.preventDefault();
+
+  // Exibir mensagem de carregamento
+  const message = document.querySelector('#message');
+  message.innerHTML = 'buscando...';
+
+  // Limpa lista de programas
+  const listaDeProgramas = document.querySelector('#shows');
+  listaDeProgramas.innerHTML = '';
+
+  // Obter o texto digitado pelo usuário
+
+  const caixaDeBusca = document.querySelector('#query');
+  const textoASerBuscado = caixaDeBusca.value;
+
+  // Formar a URL de consulta
+  const url = `https://api.tvmaze.com/search/shows?q=${textoASerBuscado}`;
+
+  // Realizar a consulta na API de forma assíncrona
+  const resposta = await fetch(url);
+  const programas = await resposta.json();
+
+  // Finaliza o procedimento caso não haja nenhum resultado
+  if (programas.length === 0) {
+    // Exibir mensagem de não encontrado
+    message.innerHTML = 'nenhum resultado encontrado.';
+    return;
+  }
+
+  // Limpar a mensagem
+  message.innerHTML = '';
+
+  // Iterar pelos programas
+  programas.forEach((programa) => {
+    // Obter os dados do programa
+    const titulo = programa?.show?.name || '';
+    const imagem = programa?.show?.image?.medium || '';
+
+    // Inserir os programas na lista de resultados
+    listaDeProgramas.insertAdjacentHTML(
+      'beforeend',
+      `
+      <li>
+        <img class="poster" src="${imagem}">
+        <span class="show-name">${titulo}</span>
+      </li>
+      `
+    );
   });
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  document
+    .querySelector('#search-form')
+    .addEventListener('submit', handleSearch);
+});
